@@ -1,3 +1,6 @@
+InternID: CITS9868 
+
+
 # Chronicle — Minimalist Personal Blog Platform
 
 A sleek, modern, and distraction-free personal blog platform built with vanilla web technologies (HTML, CSS, JavaScript). Designed for writers, engineers, and thinkers who appreciate calm interfaces, intentional design, and deep reading experiences.
