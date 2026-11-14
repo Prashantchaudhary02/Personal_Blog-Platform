@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronicle | Personal Journal & Thought Log</title>
+    <meta name="description" content="A modern, minimalist personal blog platform exploring technology, craft, design, and thoughtful living.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Marked for Markdown Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <!-- Top Progress Bar (Visible in Reader Mode) -->
+    <div id="readingProgressBar" class="reading-progress-bar"></div>
+
+    <!-- Navigation Header -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand" id="navHomeBtn" role="button" tabindex="0">
+                <div class="brand-symbol">
+                    <i data-lucide="feather"></i>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-name">Chronicle</span>
+                    <span class="brand-badge">Journal</span>
+                </div>
+            </div>
+
+            <nav class="nav-links">
+                <button class="nav-link active" data-filter="all" id="navFeedBtn">
+                    <i data-lucide="layout-grid"></i>
+                    <span>Stories</span>
+                </button>
+                <button class="nav-link" id="navBookmarksBtn">
+                    <i data-lucide="bookmark"></i>
+                    <span>Saved</span>
+                    <span class="badge" id="bookmarkCountBadge">0</span>
+                </button>
+                <button class="nav-link" id="navDraftsBtn">
+                    <i data-lucide="file-text"></i>
+                    <span>Drafts</span>
+                    <span class="badge draft-badge" id="draftCountBadge">0</span>
+                </button>
+                <button class="nav-link" id="navAboutBtn">
+                    <i data-lucide="user"></i>
+                    <span>About</span>
+                </button>
+            </nav>
+
+            <div class="nav-actions">
+                <button class="btn btn-secondary btn-icon" id="backupDataBtn" title="Backup & Manage Data">
+                    <i data-lucide="database"></i>
+                </button>
+                <button class="btn btn-secondary btn-icon" id="themeToggleBtn" title="Toggle theme (Light / Dark)">
+                    <i data-lucide="moon" id="themeIcon"></i>
+                </button>
+                <button class="btn btn-primary" id="openEditorBtn">
+                    <i data-lucide="pen-tool"></i>
+                    <span>Write Story</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Hero / Author Bio Card -->
+        <section class="hero-section" id="heroProfile">
+            <div class="hero-card">
+                <div class="hero-profile">
+                    <div class="author-info">
+                        <div class="author-headline">
+                            <h1 class="author-name">Prashant Chaudhary</h1>
+                            <span class="author-badge">Software Engineer & Essayist</span>
+                        </div>
+                        <p class="author-bio">
+                            Writing about software craft, thoughtful design systems, distributed systems, and the intersection of human psychology with technology.
+                        </p>
+                        <div class="author-links">
+                            <a href="https://github.com" target="_blank" rel="noopener" class="social-chip" title="GitHub">
+                                <i data-lucide="github"></i>
+                                <span>GitHub</span>
+                            </a>
+                            <a href="https://x.com" target="_blank" rel="noopener" class="social-chip" title="X / Twitter">
+                                <i data-lucide="twitter"></i>
+                                <span>Twitter</span>
+                            </a>
+                            <a href="https://linkedin.com" target="_blank" rel="noopener" class="social-chip" title="LinkedIn">
+                                <i data-lucide="linkedin"></i>
+                                <span>LinkedIn</span>
+                            </a>
+                            <a href="mailto:prashant@example.com" class="social-chip" title="Newsletter / Email">
+                                <i data-lucide="mail"></i>
+                                <span>Contact</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="statArticlesCount">0</span>
+                        <span class="stat-label">Published</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="statLikesCount">0</span>
+                        <span class="stat-label">Total Likes</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="statReadMinutes">0m</span>
+                        <span class="stat-label">Total Read Time</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Discovery & Controls Bar -->
+        <section class="controls-section">
+            <div class="search-wrapper">
+                <i data-lucide="search" class="search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search stories by title, topic, content, or author... (Press '/' to focus)" autocomplete="off">
+                <button id="clearSearchBtn" class="clear-search-btn" title="Clear search" style="display: none;">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <!-- Category Pills Filter -->
+            <div class="category-filters-container">
+                <div class="category-filters" id="categoryFilters">
+                    <!-- Injected dynamically via JavaScript -->
+                </div>
+            </div>
+
+            <!-- Secondary Toolbar: Sort & View Options -->
+            <div class="feed-toolbar">
+                <div class="feed-count">
+                    <span id="resultsCount">Showing all stories</span>
+                </div>
+                <div class="feed-actions">
+                    <div class="sort-select-wrapper">
+                        <i data-lucide="arrow-up-down" class="sort-icon"></i>
+                        <select id="sortSelect" aria-label="Sort articles">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="popular">Most Liked</option>
+                            <option value="quick">Quickest Read</option>
+                        </select>
+                    </div>
+
+                    <div class="view-toggles" role="group" aria-label="Layout view switcher">
+                        <button class="view-btn active" id="gridViewBtn" title="Grid View">
+                            <i data-lucide="grid-2x2"></i>
+                        </button>
+                        <button class="view-btn" id="listViewBtn" title="List View">
+                            <i data-lucide="list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Articles Grid / List Container -->
+        <section class="stories-section">
+            <div id="blogContainer" class="stories-grid">
+                <!-- Articles rendered dynamically -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-icon-wrap">
+                    <i data-lucide="book-open"></i>
+                </div>
+                <h3 id="emptyStateTitle">No stories found</h3>
+                <p id="emptyStateText">Try adjusting your search terms or filters to find what you're looking for.</p>
+                <button class="btn btn-primary" id="emptyStateActionBtn">
+                    <i data-lucide="pen-tool"></i>
+                    <span>Write First Story</span>
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <div class="brand-symbol">
+                    <i data-lucide="feather"></i>
+                </div>
+                <div>
+                    <span class="footer-logo">Chronicle</span>
+                    <p class="footer-tagline">Crafted with intentionality, minimalism, and care.</p>
+                </div>
+            </div>
+
+            <div class="footer-newsletter">
+                <h4>Stay curious</h4>
+                <p>Subscribe for quiet reflections and technical essays right in your inbox.</p>
+                <form id="newsletterForm" class="newsletter-form" onsubmit="event.preventDefault(); window.ChronicleApp.subscribeNewsletter();">
+                    <input type="email" placeholder="Your email address..." required id="newsletterEmail">
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© 2026 Chronicle. Built with vanilla modern web craft.</p>
+                <div class="footer-links">
+                    <button id="resetDemoBtn" class="footer-link-btn" title="Reset to original sample essays">Reset Demo Data</button>
+                    <span>•</span>
+                    <button id="quickDraftsBtn" class="footer-link-btn">Drafts</button>
+                    <span>•</span>
+                    <a href="#top" class="footer-link-btn">Back to Top ↑</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- 1. FULL ARTICLE READER MODAL -->
+    <div id="readerModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-dialog reader-dialog">
+            <div class="reader-header-bar">
+                <button class="btn-circle" id="closeReaderBtn" title="Close (Esc)">
+                    <i data-lucide="arrow-left"></i>
+                    <span>Back to Stories</span>
+                </button>
+                <div class="reader-top-actions">
+                    <button class="btn-circle btn-icon" id="readerBookmarkBtn" title="Bookmark article">
+                        <i data-lucide="bookmark"></i>
+                    </button>
+                    <button class="btn-circle btn-icon" id="readerShareBtn" title="Share article">
+                        <i data-lucide="share-2"></i>
+                    </button>
+                    <button class="btn-circle btn-icon" id="readerEditBtn" title="Edit article">
+                        <i data-lucide="edit-3"></i>
+                    </button>
+                </div>
+            </div>
+
+            <article class="reader-article">
+                <div class="reader-meta-top">
+                    <span class="category-pill" id="readerCategory">Engineering</span>
+                    <span class="dot-separator">•</span>
+                    <span id="readerDate">Nov 13, 2026</span>
+                    <span class="dot-separator">•</span>
+                    <span id="readerReadTime">5 min read</span>
+                </div>
+
+                <h1 class="reader-title" id="readerTitle">Article Title</h1>
+
+                <div class="reader-author-card">
+                    <div class="reader-author-details">
+                        <span class="reader-author-name" id="readerAuthor">Author Name</span>
+                        <span class="reader-author-subtitle">Author & Contributor</span>
+                    </div>
+                </div>
+
+                <div class="reader-cover-wrap" id="readerCoverWrap">
+                    <img src="" alt="Cover" id="readerCoverImg" class="reader-cover-img">
+                </div>
+
+                <div class="reader-body markdown-content" id="readerContent">
+                    <!-- Rendered HTML Markdown -->
+                </div>
+
+                <div class="reader-tags" id="readerTags">
+                    <!-- Tags pills -->
+                </div>
+
+                <!-- Claps / Likes Reaction Section -->
+                <div class="reader-reaction-box">
+                    <div class="reaction-info">
+                        <h3>Enjoyed this story?</h3>
+                        <p>Give it a clap or save it to your personal reading list.</p>
+                    </div>
+                    <div class="reaction-buttons">
+                        <button class="clap-btn" id="readerClapBtn" title="Clap / Like this post">
+                            <i data-lucide="heart" class="clap-icon"></i>
+                            <span class="clap-count" id="readerClapCount">0</span>
+                        </button>
+                        <button class="btn btn-secondary" id="readerBottomBookmarkBtn">
+                            <i data-lucide="bookmark"></i>
+                            <span id="readerBottomBookmarkText">Save Story</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Comments Section -->
+                <section class="comments-section">
+                    <div class="comments-header">
+                        <h3>Discussion (<span id="commentCount">0</span>)</h3>
+                    </div>
+
+                    <form id="commentForm" class="comment-form">
+                        <div class="comment-inputs">
+                            <input type="text" id="commentAuthor" placeholder="Your name..." required>
+                            <textarea id="commentText" placeholder="Share your thoughtful perspective..." rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-lucide="send"></i>
+                            <span>Post Thought</span>
+                        </button>
+                    </form>
+
+                    <div class="comments-list" id="commentsList">
+                        <!-- Comments injected here -->
+                    </div>
+                </section>
+            </article>
+        </div>
+    </div>
+
+    <!-- 2. CREATE / EDIT STORY MODAL -->
+    <div id="editorModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-dialog editor-dialog">
+            <div class="editor-header">
+                <div class="editor-title-wrap">
+                    <div class="brand-symbol small">
+                        <i data-lucide="pen-tool"></i>
+                    </div>
+                    <div>
+                        <h2 id="editorModalTitle">Write a New Story</h2>
+                        <span class="editor-subtitle">Craft your essay with markdown formatting and live preview.</span>
+                    </div>
+                </div>
+                <button class="btn-circle" id="closeEditorBtn" title="Close editor">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <form id="blogForm" class="editor-form">
+                <div class="form-row grid-2">
+                    <div class="form-group">
+                        <label for="postTitle">Story Title <span class="required">*</span></label>
+                        <input type="text" id="postTitle" placeholder="e.g. The Architecture of Calm Interfaces" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="postAuthor">Author Name <span class="required">*</span></label>
+                        <input type="text" id="postAuthor" value="Prashant Chaudhary" required>
+                    </div>
+                </div>
+
+                <div class="form-row grid-2">
+                    <div class="form-group">
+                        <label for="postCategory">Category</label>
+                        <div class="select-with-add">
+                            <select id="postCategory">
+                                <option value="Engineering & Architecture">Engineering & Architecture</option>
+                                <option value="Design & UX">Design & UX</option>
+                                <option value="Artificial Intelligence">Artificial Intelligence</option>
+                                <option value="Productivity & Craft">Productivity & Craft</option>
+                                <option value="Life & Philosophy">Life & Philosophy</option>
+                                <option value="Short Notes">Short Notes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="postTags">Tags (Comma-separated)</label>
+                        <input type="text" id="postTags" placeholder="e.g. Architecture, WebDev, Design">
+                    </div>
+                </div>
+
+                <!-- Cover Image & Presets -->
+                <div class="form-group">
+                    <label for="postCover">Cover Image URL</label>
+                    <div class="input-with-presets">
+                        <input type="url" id="postCover" placeholder="Paste an Unsplash image URL or choose a preset below...">
+                        <div class="cover-presets" id="coverPresets">
+                            <span class="presets-label">Presets:</span>
+                            <button type="button" class="preset-pill" data-url="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80">Technology</button>
+                            <button type="button" class="preset-pill" data-url="https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80">Minimal Desk</button>
+                            <button type="button" class="preset-pill" data-url="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80">Cyberpunk</button>
+                            <button type="button" class="preset-pill" data-url="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=80">Journaling</button>
+                            <button type="button" class="preset-pill" data-url="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=1200&q=80">Mountains</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Editor Tabs: Write vs Preview -->
+                <div class="editor-tabs-bar">
+                    <div class="tab-buttons">
+                        <button type="button" class="tab-btn active" id="tabWriteBtn">
+                            <i data-lucide="edit-2"></i>
+                            <span>Write</span>
+                        </button>
+                        <button type="button" class="tab-btn" id="tabPreviewBtn">
+                            <i data-lucide="eye"></i>
+                            <span>Live Preview</span>
+                        </button>
+                    </div>
+
+                    <!-- Markdown Quick Insertion Toolbar -->
+                    <div class="markdown-toolbar" id="markdownToolbar">
+                        <button type="button" class="tool-btn" data-tool="bold" title="Bold (**text**)">
+                            <i data-lucide="bold"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-tool="italic" title="Italic (*text*)">
+                            <i data-lucide="italic"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-tool="h2" title="Heading 2 (## Title)">
+                            <i data-lucide="heading-2"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-tool="h3" title="Heading 3 (### Title)">
+                            <i data-lucide="heading-3"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-tool="quote" title="Quote (> blockquote)">
+                            <i data-lucide="quote"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-tool="code" title="Code snippet (```code```)">
+                            <i data-lucide="code"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-tool="list" title="Bullet List (- item)">
+                            <i data-lucide="list"></i>
+                        </button>
+                        <button type="button" class="tool-btn" data-tool="link" title="Insert Link ([text](url))">
+                            <i data-lucide="link"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="editor-content-area">
+                    <textarea id="postContent" placeholder="Write your thoughts, essays, and notes here... Full Markdown syntax supported." rows="14" required></textarea>
+                    
+                    <div id="editorLivePreview" class="editor-preview-box markdown-content" style="display: none;">
+                        <p class="preview-empty">Live preview will appear here as you type...</p>
+                    </div>
+                </div>
+
+                <!-- Word & Read Time Counter -->
+                <div class="editor-footer-stats">
+                    <div class="stats-text">
+                        <span id="editorWordCount">0 words</span>
+                        <span class="dot-separator">•</span>
+                        <span id="editorCharCount">0 characters</span>
+                        <span class="dot-separator">•</span>
+                        <span id="editorEstTime">1 min read</span>
+                    </div>
+
+                    <div class="draft-toggle-wrap">
+                        <label class="switch-label">
+                            <input type="checkbox" id="postIsDraft">
+                            <span class="switch-slider"></span>
+                            <span class="switch-text">Save as Draft</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Form Action Buttons -->
+                <div class="editor-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelEditorBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="publishSubmitBtn">
+                        <i data-lucide="check"></i>
+                        <span id="submitBtnText">Publish Story</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. DATA MANAGEMENT / BACKUP MODAL -->
+    <div id="dataModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="brand-symbol small">
+                    <i data-lucide="database"></i>
+                </div>
+                <div>
+                    <h2>Data & Storage Hub</h2>
+                    <span class="modal-subtitle">Backup, export, or import your personal blog repository.</span>
+                </div>
+                <button class="btn-circle" id="closeDataModalBtn">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="modal-body data-hub-body">
+                <div class="data-card">
+                    <div class="data-card-icon">
+                        <i data-lucide="download"></i>
+                    </div>
+                    <div class="data-card-info">
+                        <h4>Export Blogs (JSON)</h4>
+                        <p>Download a complete snapshot of your stories, comments, likes, and bookmarks.</p>
+                    </div>
+                    <button class="btn btn-secondary" id="exportDataBtn">Export</button>
+                </div>
+
+                <div class="data-card">
+                    <div class="data-card-icon">
+                        <i data-lucide="upload"></i>
+                    </div>
+                    <div class="data-card-info">
+                        <h4>Import Blogs (JSON)</h4>
+                        <p>Restore stories from a previously downloaded backup JSON file.</p>
+                        <input type="file" id="importFileInput" accept=".json" style="display: none;">
+                    </div>
+                    <button class="btn btn-secondary" id="triggerImportBtn">Import</button>
+                </div>
+
+                <div class="data-card danger-zone">
+                    <div class="data-card-icon">
+                        <i data-lucide="rotate-ccw"></i>
+                    </div>
+                    <div class="data-card-info">
+                        <h4>Reset to Demo Stories</h4>
+                        <p>Load the original 4 curated essays. Will replace current items.</p>
+                    </div>
+                    <button class="btn btn-danger" id="resetDemoFromModalBtn">Reset Demo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. ABOUT AUTHOR MODAL -->
+    <div id="aboutModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-dialog about-dialog">
+            <div class="modal-header">
+                <h2>About the Author & Platform</h2>
+                <button class="btn-circle" id="closeAboutModalBtn">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="about-modal-content">
+                <div class="about-modal-profile">
+                    <div>
+                        <h3>Prashant Chaudhary</h3>
+                        <p class="about-role">Staff Technologist, Writer & Open Source Craftsman</p>
+                    </div>
+                </div>
+                <div class="about-body">
+                    <p>
+                        Welcome to <strong>Chronicle</strong> — a calm, minimalist personal blog platform built to publish ideas without the algorithmic noise of modern social networks.
+                    </p>
+                    <p>
+                        Every post is composed in clean Markdown, stored locally in your browser, and rendered with custom typographic scales optimized for deep reading.
+                    </p>
+                    <h4>Key Platform Features</h4>
+                    <ul class="about-feature-list">
+                        <li><strong>Pure Markdown Writing:</strong> Distraction-free composer with live formatting toolbar and real-time preview.</li>
+                        <li><strong>Dark & Light Modes:</strong> Fluid theme transitions crafted with accessible color palettes.</li>
+                        <li><strong>Full Reader View:</strong> Immersive reading mode with scroll progress indicator, claps, and comments.</li>
+                        <li><strong>Client-Side Privacy:</strong> 100% private, runs offline, data persists in your browser with JSON export/import.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. CONFIRMATION MODAL -->
+    <div id="confirmModal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-dialog confirm-dialog">
+            <div class="confirm-icon-wrap" id="confirmIcon">
+                <i data-lucide="alert-triangle"></i>
+            </div>
+            <h3 id="confirmTitle">Are you sure?</h3>
+            <p id="confirmMessage">This action cannot be undone.</p>
+            <div class="confirm-actions">
+                <button class="btn btn-secondary" id="confirmCancelBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmProceedBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <!-- Application Script -->
+    <script src="script.js"></script>
+</body>
+</html>
